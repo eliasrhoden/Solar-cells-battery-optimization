@@ -62,7 +62,11 @@ I will assume 15min.
 TODO...
 
 
+## Early simulations
 
+![](input_data.png)
+
+![](output_data.png)
 
 
 

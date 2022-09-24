@@ -40,32 +40,41 @@ def plot_res(elec_cost,house_consum,avaliable_solar,dt:float,battery:BatterySetu
     N = len(elec_cost)
     t = np.linspace(0,24,N)
 
+    y_rotation = 80
+
+
     plt.figure()
     plt.subplot(3,1,1)
+    plt.title("Input data")
     plt.plot(t,elec_cost)
-    plt.ylabel("Cost [sek/KWh]")
+    plt.ylabel("Cost [sek/KWh]",rotation=y_rotation)
 
     plt.subplot(3,1,2)
     plt.plot(t,house_consum)
-    plt.ylabel("House consumtion [W]")
+    plt.ylabel("House consumtion [W]",rotation=y_rotation)
 
     plt.subplot(3,1,3)
     plt.plot(t,avaliable_solar)
-    plt.ylabel("Avaliable solar power [W]")
+    plt.ylabel("Avaliable solar power [W]",rotation=y_rotation)
+
+    plt.tight_layout()
+    plt.savefig('input_data.png',dpi=400)
 
     plt.figure()
     plt.subplot(3,1,1)
+    plt.title("Optimized control")
     plt.plot(t,QB)
-    plt.ylabel("Battery charge [KWh]")
+    plt.ylabel("Battery charge [KWh]",rotation=y_rotation)
 
     plt.subplot(3,1,2)
     plt.plot(t,WB)
-    plt.ylabel("Battery supply to house [W]")
+    plt.ylabel("Battery supply to house [W]",rotation=y_rotation)
 
     plt.subplot(3,1,3)
     plt.plot(t,WE)
-    plt.ylabel("Power drawn from the net [W]")
-
+    plt.ylabel("Power drawn from the net [W]",rotation=y_rotation)
+    plt.tight_layout()
+    plt.savefig('output_data.png',dpi=400)
     plt.show()
 
 
