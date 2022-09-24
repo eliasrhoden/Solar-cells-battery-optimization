@@ -25,7 +25,7 @@ The price for power consumption varies over the day, the prices are stored in a 
 The cost of power consumtion changes as
 
 $$
-\frac{d}{dt} J = C(t) \, W_E(t)
+\frac{d}{dt} J = C(t) W_E(t)
 $$
 
 I assume that the export price is not the same as the purchase prise, I added a percentage factor to accomodate for this $\eta$.
@@ -33,8 +33,8 @@ I assume that the export price is not the same as the purchase prise, I added a 
 $$
 \frac{d}{dt} J = \left\{
 \begin{array}{cc}
-C(t) \, W_E(t) & \text{if} \quad  W_E(t)>= 0\\
-\eta \, C(t) \, \, W_E(t) & \text{else}
+C(t)  W_E(t) & \text{if} \quad  W_E(t)>= 0\\
+\eta  C(t)  W_E(t) & \text{else}
 \end{array}
 \right.
 $$
