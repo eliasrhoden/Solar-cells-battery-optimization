@@ -15,21 +15,29 @@ class BatterySetup:
 
 def main():
 
-    battery = BatterySetup(10,10,1)
+    battery = BatterySetup(4,4,10) #10-30 KWh
     N = int(24*4)
     dt = 15*60
     t = np.linspace(0,24,N)
     elec_cost = np.ones(N)*0.1
     elec_cost[65:80] = 10
+    #elec_cost[0:10] = 10000
+
     avaliable_solar = np.zeros(N)
-    avaliable_solar[30:60] = 5
-    export_price_precentage = 0.1
+    #avaliable_solar[30:60] = 1
+    solar_sigma = 2
+    solar_mu = 12
+    solar_peak = 1
+    avaliable_solar = np.exp(-1/2*((solar_mu-t)/solar_sigma)**2)
+    avaliable_solar = avaliable_solar * 1/np.max(avaliable_solar)
+    avaliable_solar *= solar_peak
+
+    export_price_precentage = 0.7
 
     #house_consum = np.sin(-t*2*np.pi/24) + 1
     house_consum = np.zeros(N)
-    house_consum[10:20] = 1
-    house_consum[65:80] = 2
-
+    house_consum[6*4:8*4] = 1
+    house_consum[16*4:22*4] = 3
 
     WB,WE,QB = opt_battery_strat(elec_cost,house_consum,avaliable_solar,dt,battery,export_price_precentage)
 
@@ -80,6 +88,11 @@ def plot_res(elec_cost,house_consum,avaliable_solar,dt:float,battery:BatterySetu
 
     
 
+def sigmoid(x):
+    # 0 for x < 0
+    # 1 for x > 0
+
+    return 1/(1 + casadi.exp(-x*20))
 
 
 
@@ -117,7 +130,9 @@ def opt_battery_strat(elec_cost,house_consum,avaliable_solar,dt:float,battery:Ba
         abs_70_devi = opti.variable()
         opti.subject_to(qb_70_devi <= abs_70_devi)
         opti.subject_to(qb_70_devi >= -1*abs_70_devi)
-        cost += abs_70_devi*1e-6
+        #cost += abs_70_devi*1e-9
+        cost += casadi.atan(abs_70_devi)*1e-7
+
         
 
         # Battery dunamic equation
@@ -149,15 +164,12 @@ def opt_battery_strat(elec_cost,house_consum,avaliable_solar,dt:float,battery:Ba
 
         # Add upp elec cost
 
-        J_consume = opti.variable()
-        opti.subject_to(J_consume>=we_i)
-        opti.subject_to(J_consume>0)
 
-        J_export = opti.variable()
-        opti.subject_to(J_export<=we_i)
-        opti.subject_to(J_export<=0)
+        J_consume = sigmoid(we_i)*dt_watt_h*elec_cost[i]*we_i
 
-        cost += J_consume*dt_watt_h*elec_cost[i] - export_price_precentage*J_export*dt_watt_h*elec_cost[i]
+        J_export = sigmoid(-1*we_i)*dt_watt_h*elec_cost[i]*export_price_precentage*we_i
+
+        cost += J_consume + J_export
 
     opti.solver('ipopt')
     opti.minimize(cost)
