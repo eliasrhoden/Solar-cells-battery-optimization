@@ -4,7 +4,6 @@ import casadi
 from dataclasses import dataclass
 
 
-
 @dataclass
 class BatterySetup:
     max_battery_charge:float 
@@ -12,8 +11,6 @@ class BatterySetup:
     max_battery_capacity:float 
     min_battery_capacity:float
     rate_limit:float
-
-
 
 def main():
 
@@ -23,7 +20,7 @@ def main():
     t = np.linspace(0,24,N)
     elec_cost = np.ones(N)*0.1
     elec_cost[65:80] = 10
-    #elec_cost[0:10] = 10000
+    #elec_cost[0:10] = 100000
 
     avaliable_solar = np.zeros(N)
     #avaliable_solar[30:60] = 1
