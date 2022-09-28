@@ -10,12 +10,13 @@ class BatterySetup:
     max_battery_charge:float 
     max_battery_disscharge:float 
     max_battery_capacity:float 
+    rate_limit:float
 
 
 
 def main():
 
-    battery = BatterySetup(4,4,10) #10-30 KWh
+    battery = BatterySetup(4,4,10,2) #10-30 KWh
     N = int(24*4)
     dt = 15*60
     t = np.linspace(0,24,N)
@@ -142,7 +143,7 @@ def opt_battery_strat(elec_cost,house_consum,avaliable_solar,dt:float,battery:Ba
         # Battery must end with the same charge as it started with
         if i == N-1:
             opti.subject_to(qb_i == QB[0])
-        
+      
         QB.append(qb_i)
 
         # Charge controller, how much wattage from/to the battery
@@ -152,10 +153,17 @@ def opt_battery_strat(elec_cost,house_consum,avaliable_solar,dt:float,battery:Ba
         opti.subject_to(wb_i<= battery.max_battery_disscharge)
         opti.subject_to(wb_i >= -1*battery.max_battery_charge)
 
+        # rate limit
+        if i > 0:
+            opti.subject_to(wb_i <= WB[i-1] + battery.rate_limit)
+            opti.subject_to(wb_i >= WB[i-1] - battery.rate_limit)
+
         WB.append(wb_i)
 
-        # How much current is drawn from the net & cells?
+        if i == N-1:
+            opti.subject_to(wb_i == WB[-2])
 
+        # How much current is drawn from the net & cells?
         W_house = house_consum[i]
         W_cells = avaliable_solar[i]
 
@@ -163,8 +171,6 @@ def opt_battery_strat(elec_cost,house_consum,avaliable_solar,dt:float,battery:Ba
         WE.append(we_i)
 
         # Add upp elec cost
-
-
         J_consume = sigmoid(we_i)*dt_watt_h*elec_cost[i]*we_i
 
         J_export = sigmoid(-1*we_i)*dt_watt_h*elec_cost[i]*export_price_precentage*we_i
@@ -189,26 +195,6 @@ def opt_battery_strat(elec_cost,house_consum,avaliable_solar,dt:float,battery:Ba
 
 
     return WB_RES,WE_RES,QB_RES
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
