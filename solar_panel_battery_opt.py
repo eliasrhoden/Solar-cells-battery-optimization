@@ -10,13 +10,14 @@ class BatterySetup:
     max_battery_charge:float 
     max_battery_disscharge:float 
     max_battery_capacity:float 
+    min_battery_capacity:float
     rate_limit:float
 
 
 
 def main():
 
-    battery = BatterySetup(4,4,10,2) #10-30 KWh
+    battery = BatterySetup(4,4,10,2,2) #10-30 KWh
     N = int(24*4)
     dt = 15*60
     t = np.linspace(0,24,N)
@@ -124,7 +125,7 @@ def opt_battery_strat(elec_cost,house_consum,avaliable_solar,dt:float,battery:Ba
         # Battery charge at step i
         qb_i = opti.variable()
         opti.subject_to(qb_i <= battery.max_battery_capacity)
-        opti.subject_to(qb_i > 0)
+        opti.subject_to(qb_i > battery.min_battery_capacity)
 
         qb_70_devi = qb_i - 0.7*battery.max_battery_capacity
 
@@ -132,7 +133,7 @@ def opt_battery_strat(elec_cost,house_consum,avaliable_solar,dt:float,battery:Ba
         opti.subject_to(qb_70_devi <= abs_70_devi)
         opti.subject_to(qb_70_devi >= -1*abs_70_devi)
         #cost += abs_70_devi*1e-9
-        cost += casadi.atan(abs_70_devi)*1e-7
+        cost += sigmoid(abs_70_devi)*0.1
 
         
 
